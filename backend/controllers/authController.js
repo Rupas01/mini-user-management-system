@@ -31,4 +31,22 @@ const loginUser = async (req, res) => {
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
-module.exports = { registerUser, loginUser };
+const getMe = async (req, res) => {
+  const user = {
+    _id: req.user._id,
+    fullName: req.user.fullName,
+    email: req.user.email,
+    role: req.user.role,
+  };
+  res.status(200).json(user);
+};
+
+const logoutUser = (req, res) => {
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+module.exports = {
+  registerUser,
+  loginUser,
+  getMe,   
+  logoutUser  
+};
