@@ -25,6 +25,7 @@ const Dashboard = () => {
       navigate('/login');
     } else {
       setUser(storedUser);
+      // Only fetch list if admin
       if (storedUser.role === 'admin') {
         fetchUsers(storedUser.token, 1);
       }
@@ -73,11 +74,20 @@ const Dashboard = () => {
     setShowLogoutModal(false);
   };
 
+  // Helper to format dates nicely
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', 
+      hour: 'numeric', minute: 'numeric', hour12: true
+    });
+  };
+
   if (!user) return <div className="p-10 text-center">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 relative">
-      {/* Navbar - Made Responsive */}
+      {/* Navbar */}
       <nav className="bg-white shadow-sm mb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -92,7 +102,6 @@ const Dashboard = () => {
                 <div className="text-sm font-bold text-gray-800 max-w-[100px] sm:max-w-none truncate">
                   {user.fullName}
                 </div>
-                {/* Hide Role on very small screens to save space */}
                 <div className="text-xs text-gray-500 uppercase tracking-wider hidden sm:block">
                   {user.role}
                 </div>
@@ -111,11 +120,12 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        
+        {/* --- ADMIN VIEW --- */}
         {user.role === 'admin' ? (
           <div className="bg-white rounded-lg shadow flex flex-col">
             {isLoading && <div className="p-4 text-center text-gray-500">Loading users...</div>}
             
-            {/* RESPONSIVE FIX: Add overflow-x-auto here */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -123,6 +133,7 @@ const Dashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -133,6 +144,12 @@ const Dashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{u.fullName}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{u.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{u.role}</td>
+                      
+                      {/* Last Login Column */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(u.lastLogin)}
+                      </td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${u.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {u.status}
@@ -161,6 +178,7 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
+          /* --- USER VIEW --- */
           <div className="bg-white overflow-hidden shadow-xl rounded-lg p-6 max-w-lg mx-auto">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Your Profile</h2>
             <div className="space-y-4">
@@ -172,12 +190,18 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Email Address</p>
                 <p className="font-semibold text-lg break-all">{user.email}</p>
               </div>
-              <div className="bg-gray-50 p-4 rounded-md flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-500">Account Role</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="text-sm text-gray-500">Role</p>
                   <span className="uppercase inline-block mt-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">{user.role}</span>
                 </div>
+                <div className="bg-gray-50 p-4 rounded-md">
+                  <p className="text-sm text-gray-500">Last Login</p>
+                  <p className="font-semibold text-sm mt-1">{formatDate(user.lastLogin || Date.now())}</p>
+                </div>
               </div>
+
               <div className="pt-2">
                 <button onClick={() => navigate('/profile')} className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition font-medium shadow">
                   Edit Profile Information
@@ -188,7 +212,9 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* --- MODALS (Same as before) --- */}
+      {/* --- MODALS --- */}
+      
+      {/* 1. Status Change Modal */}
       {showStatusModal && selectedUser && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 px-4">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
@@ -204,6 +230,7 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* 2. Logout Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 px-4">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm mx-auto">
@@ -216,6 +243,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

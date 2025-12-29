@@ -7,7 +7,7 @@ const registerUser = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
     if (await User.findOne({ email })) return res.status(400).json({ message: 'User already exists' });
-    
+
     const user = await User.create({ fullName, email, password });
     if (user) {
       res.status(201).json({
@@ -19,16 +19,37 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
+
     if (user && (await user.matchPassword(password))) {
+
+      // 1. SECURITY CHECK: Is the account active?
+      if (user.status !== 'active') {
+        return res.status(403).json({ message: 'Account is deactivated. Contact admin.' });
+      }
+
+      // 2. FEATURE: Update Last Login
       user.lastLogin = Date.now();
       await user.save();
+
+      // 3. Send Response
       res.json({
-        _id: user._id, fullName: user.fullName, email: user.email, role: user.role, token: generateToken(user._id)
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        status: user.status, // Good to send this back
+        token: generateToken(user._id),
       });
-    } else res.status(401).json({ message: 'Invalid email or password' });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+
+    } else {
+      res.status(401).json({ message: 'Invalid email or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 const getMe = async (req, res) => {
@@ -54,7 +75,7 @@ const updateUserProfile = async (req, res) => {
       user.email = req.body.email || user.email;
 
       if (req.body.password) {
-        user.password = req.body.password; 
+        user.password = req.body.password;
       }
 
       const updatedUser = await user.save();
@@ -77,7 +98,7 @@ const updateUserProfile = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  getMe,   
+  getMe,
   logoutUser,
   updateUserProfile
 };
