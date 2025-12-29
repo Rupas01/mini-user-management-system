@@ -29,11 +29,6 @@ const Welcome = () => {
           </Link>
         </div>
       </div>
-
-      {/* Footer / Credits */}
-      <div className="absolute bottom-6 text-blue-200 text-sm">
-        Designed for the Assessment
-      </div>
     </div>
   );
 };

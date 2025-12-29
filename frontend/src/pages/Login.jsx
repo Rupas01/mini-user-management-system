@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import authService from '../features/auth/authService';
+import Spinner from '../components/Spinner'; // Import Spinner
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  const [isLoading, setIsLoading] = useState(false); // Loading State
 
   const { email, password } = formData;
   const navigate = useNavigate();
@@ -22,20 +25,21 @@ const Login = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
+    setIsLoading(true); // Start Loading
+
     try {
       const userData = { email, password };
       
-      // 1. Call Backend
       await authService.login(userData);
       
-      // 2. Success
-      // toast.success('Logged in successfully'); // Optional
-      navigate('/dashboard'); // Go to dashboard
+      // toast.success('Logged in successfully'); 
+      navigate('/dashboard');
       
     } catch (error) {
-      // 3. Error
       const message = error.response?.data?.message || 'Login failed';
       toast.error(message);
+    } finally {
+      setIsLoading(false); // Stop Loading
     }
   };
 
@@ -57,6 +61,7 @@ const Login = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="Enter your email"
+              disabled={isLoading}
             />
           </div>
 
@@ -70,14 +75,16 @@ const Login = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="Enter your password"
+              disabled={isLoading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+            disabled={isLoading}
+            className={`w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
           >
-            Sign In
+            {isLoading ? <Spinner /> : 'Sign In'}
           </button>
         </form>
 

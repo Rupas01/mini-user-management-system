@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import authService from '../features/auth/authService';
+import Spinner from '../components/Spinner'; // Import Spinner
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -10,10 +11,12 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+  
+  const [isLoading, setIsLoading] = useState(false); // Loading State
 
   const { fullName, email, password, confirmPassword } = formData;
   
-  const navigate = useNavigate(); // Hook for redirection
+  const navigate = useNavigate();
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -25,26 +28,26 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // 1. Validation
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
 
+    setIsLoading(true); // Start Loading
+
     try {
       const userData = { fullName, email, password };
       
-      // 2. Call Backend
       await authService.register(userData);
       
-      // 3. Success Feedback
       toast.success('Registration successful! Please login.');
-      navigate('/login'); // Redirect to login page
+      navigate('/login');
       
     } catch (error) {
-      // 4. Error Feedback
       const message = error.response?.data?.message || 'Registration failed';
       toast.error(message);
+    } finally {
+      setIsLoading(false); // Stop Loading (always runs)
     }
   };
 
@@ -66,6 +69,7 @@ const Register = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="John Doe"
+              disabled={isLoading} // Disable input while loading
             />
           </div>
 
@@ -79,6 +83,7 @@ const Register = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="john@example.com"
+              disabled={isLoading}
             />
           </div>
 
@@ -93,6 +98,7 @@ const Register = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="••••••••"
               minLength="6"
+              disabled={isLoading}
             />
           </div>
 
@@ -106,14 +112,16 @@ const Register = () => {
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               placeholder="••••••••"
+              disabled={isLoading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+            disabled={isLoading} // Prevent double clicks
+            className={`w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'}`}
           >
-            Sign Up
+            {isLoading ? <Spinner /> : 'Sign Up'}
           </button>
         </form>
 
