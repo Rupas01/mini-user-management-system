@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import authService from '../features/auth/authService';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +10,7 @@ const Login = () => {
   });
 
   const { email, password } = formData;
+  const navigate = useNavigate();
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -16,9 +19,24 @@ const Login = () => {
     }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData); // We will connect to backend next
+
+    try {
+      const userData = { email, password };
+      
+      // 1. Call Backend
+      await authService.login(userData);
+      
+      // 2. Success
+      // toast.success('Logged in successfully'); // Optional
+      navigate('/dashboard'); // Go to dashboard
+      
+    } catch (error) {
+      // 3. Error
+      const message = error.response?.data?.message || 'Login failed';
+      toast.error(message);
+    }
   };
 
   return (
@@ -29,11 +47,8 @@ const Login = () => {
         </h2>
         
         <form onSubmit={onSubmit} className="space-y-6">
-          {/* Email Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <input
               type="email"
               name="email"
@@ -45,11 +60,8 @@ const Login = () => {
             />
           </div>
 
-          {/* Password Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <input
               type="password"
               name="password"
@@ -61,7 +73,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"

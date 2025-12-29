@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import authService from '../features/auth/authService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +12,8 @@ const Register = () => {
   });
 
   const { fullName, email, password, confirmPassword } = formData;
+  
+  const navigate = useNavigate(); // Hook for redirection
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -18,12 +22,29 @@ const Register = () => {
     }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. Validation
     if (password !== confirmPassword) {
-      alert('Passwords do not match'); // We will replace this with a nice toast notification later
-    } else {
-      console.log(formData);
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    try {
+      const userData = { fullName, email, password };
+      
+      // 2. Call Backend
+      await authService.register(userData);
+      
+      // 3. Success Feedback
+      toast.success('Registration successful! Please login.');
+      navigate('/login'); // Redirect to login page
+      
+    } catch (error) {
+      // 4. Error Feedback
+      const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
     }
   };
 
@@ -35,11 +56,8 @@ const Register = () => {
         </h2>
         
         <form onSubmit={onSubmit} className="space-y-6">
-          {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
             <input
               type="text"
               name="fullName"
@@ -51,11 +69,8 @@ const Register = () => {
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
             <input
               type="email"
               name="email"
@@ -67,11 +82,8 @@ const Register = () => {
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <input
               type="password"
               name="password"
@@ -84,11 +96,8 @@ const Register = () => {
             />
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
@@ -100,7 +109,6 @@ const Register = () => {
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
