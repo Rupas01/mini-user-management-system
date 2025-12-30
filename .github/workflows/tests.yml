@@ -28,8 +28,8 @@ jobs:
     - name: Run Backend Tests
       env:
         NODE_ENV: test
-        JWT_SECRET: testsecret  # Needs a dummy secret to run tests
-        MONGO_URI: mongodb://localhost:27017/test # Dummy URI (memory server overrides this)
+        JWT_SECRET: testsecret 
+        MONGO_URI: mongodb://localhost:27017/test 
       run: |
         cd backend
         npm test -- --watchAll=false
