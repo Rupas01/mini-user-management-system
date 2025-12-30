@@ -5,6 +5,10 @@ The application allows users to register, log in, manage their profiles, and ena
 
 ---
 
+## Live Demo
+- **Frontend Deployment:** https://mini-user-management-system-nu.vercel.app/
+- **Backend API:** https://mini-user-management-system-e4sl.onrender.com
+
 ## Tech Stack
 
 Frontend:
