@@ -53,7 +53,7 @@ Backend:
 
 ### Clone Repository
 ```bash
-git clone https://github.com/Rupas01/mini-user-management.git
+git clone https://github.com/Rupas01/mini-user-management-system.git
 cd mini-user-management
 ```
 
