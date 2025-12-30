@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // The URL of your backend API
-const API_URL = 'http://localhost:5000/api/auth/';
+// const API_URL = 'http://localhost:5000/api/auth/';
+const BACKEND_DOMAIN = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${BACKEND_DOMAIN}/api/auth/`;
 
 // Register user
 const register = async (userData) => {
